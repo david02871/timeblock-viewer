@@ -2,18 +2,19 @@
 	import { getTimeBlocks } from './clockify.js';
 
 	// TODO
-	// Minimum height, inline blocks (expand on hover)
 	// Poll for updates
-	// Show current time
+	// Show current time on hover at cursor
+	// 
 	// scroll through time
 	// in progress tasks
 
-	const today = new Date();
-
 	let timeBlocks = [];
 	let timeEntries = [];
+	let today = new Date();
+	let todayMs = today.getTime();
 	let timeFromMs = today.setHours(9, 0, 0, 0); // 9:00am
 	let timeToMs = today.setHours(18, 0, 0, 0); // 6:00pm
+	let timeCursorPos = timeToPx(todayMs);
 
 	function timeToPx(timeMs) {
 		const windowHeight = window.innerHeight;
@@ -25,7 +26,7 @@
 	function updateTimeBlocks() {
 		timeBlocks = timeEntries.map(entry => ({
 			startPx: timeToPx(entry.start),
-			endPx: timeToPx(entry.end),
+			heightPx: Math.min(timeToPx(entry.end) - timeToPx(entry.start), 2),
 			...entry
 		}));
 	}
@@ -33,7 +34,6 @@
 	async function init() {
 		timeEntries = await getTimeBlocks()
 			.catch(error => console.error(error));
-
 		updateTimeBlocks();
 	}
 
@@ -46,11 +46,12 @@
 	<div class='time-block-container'>
 		{#each timeBlocks as tb}
 			{#if tb.startPx > -1}
-				<div class='time-block' style='background-color:{tb.project.color}; top:{tb.startPx}px; height:{tb.endPx - tb.startPx}px;'></div>
+				<div class='time-block' style='background-color:{ tb.color }; top:{ tb.startPx }px; height:{ tb.heightPx }px;'>
+				</div>
 			{/if}
 		{/each}
 
-		<div class='time-cursor' style='top: {timeToPx(new Date().getTime())}px'></div>
+		<div class='time-cursor' style='top: { timeCursorPos }px'></div>
 	</div>
 </main>
 

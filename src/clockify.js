@@ -11,10 +11,8 @@ export async function getTimeBlocks() {
         return {
             start: Date.parse(tb.timeInterval.start),
             end: Date.parse(tb.timeInterval.end),
-            project: {
-                name: project ? project.name : 'No Project',
-                color: project ? project.color : 'darkgrey'
-            }
+            name: project ? project.name : 'No Project',
+            color: project ? project.color : 'darkgrey'
         }
     });
 
