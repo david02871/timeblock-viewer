@@ -5,7 +5,7 @@ export async function getTimeBlocks() {
     const projects = await findProjectsOnWorkspace(user.activeWorkspace);
     const { timeEntriesList } = await get50MostRecentTimeEntries(user.activeWorkspace, user.id);
 
-    const timeBlocks = timeEntriesList.map(tb => {
+    let timeBlocks = timeEntriesList.map(tb => {
         const project = projects.find(p => p.id === tb.projectId);
 
         return {
@@ -15,6 +15,9 @@ export async function getTimeBlocks() {
             color: project ? project.color : 'darkgrey'
         }
     });
+
+    // Sort Ascending
+    timeBlocks = timeBlocks.sort((a, b) => a.end - b.end);
 
     return timeBlocks;
 }

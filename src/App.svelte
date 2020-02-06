@@ -6,9 +6,12 @@
 	// Show current time on hover at cursor
 	// scroll through time
 	// in progress tasks
+	// red cursor when not tracking
+	// stop button on cursor
 
 	let timeBlocks = [];
 	let timeEntries = [];
+	let gapBlocks = [];
 	let today = new Date();
 	let todayMs = today.getTime();
 	let timeFromMs = today.setHours(9, 0, 0, 0); // 9:00am
@@ -27,6 +30,30 @@
 			heightPx: Math.max(timeToPx(entry.end) - timeToPx(entry.start), 2),
 			...entry
 		}));
+
+		let newBlocks = [];
+		timeBlocks.forEach((item, index) => {
+			// off screen
+			if (index === 0 || item.startPx < 1) {
+				return;
+			}
+
+			const previousItem = timeBlocks[index - 1];
+			const previousItemEndPx = previousItem.startPx + previousItem.heightPx;
+			const gapPx = item.startPx - previousItemEndPx;
+
+			// overlap
+			if (gapPx < 1) {
+				return;
+			}
+
+			newBlocks.push({
+				startPx: previousItemEndPx,
+				heightPx: gapPx
+			});
+		});
+
+		gapBlocks = newBlocks;
 	}
 
 	async function init() {
@@ -52,6 +79,16 @@
 			{/if}
 		{/each}
 
+		{#each gapBlocks as tb}
+			{#if tb.startPx > -1}
+				<div 
+					class='gap-block' 
+					style='top:{ tb.startPx }px; height:{ tb.heightPx }px;'
+				>
+				</div>
+			{/if}
+		{/each}
+
 		<div class='time-cursor' style='top: { timeToPx(todayMs) }px'></div>
 	</div>
 </main>
@@ -65,6 +102,15 @@
 
 	main {
 		height: 100vh;
+	}
+
+	.gap-block {
+		position: absolute;
+		overflow-y: hidden;
+		left: 0px;
+		width: 100%;
+		background-color: #222;
+		cursor: pointer;
 	}
 
 	.time-block {
