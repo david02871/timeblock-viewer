@@ -4,7 +4,6 @@
 	// TODO
 	// Poll for updates
 	// Show current time on hover at cursor
-	// 
 	// scroll through time
 	// in progress tasks
 
@@ -14,7 +13,6 @@
 	let todayMs = today.getTime();
 	let timeFromMs = today.setHours(9, 0, 0, 0); // 9:00am
 	let timeToMs = today.setHours(18, 0, 0, 0); // 6:00pm
-	let timeCursorPos = timeToPx(todayMs);
 
 	function timeToPx(timeMs) {
 		const windowHeight = window.innerHeight;
@@ -26,7 +24,7 @@
 	function updateTimeBlocks() {
 		timeBlocks = timeEntries.map(entry => ({
 			startPx: timeToPx(entry.start),
-			heightPx: Math.min(timeToPx(entry.end) - timeToPx(entry.start), 2),
+			heightPx: Math.max(timeToPx(entry.end) - timeToPx(entry.start), 2),
 			...entry
 		}));
 	}
@@ -46,12 +44,15 @@
 	<div class='time-block-container'>
 		{#each timeBlocks as tb}
 			{#if tb.startPx > -1}
-				<div class='time-block' style='background-color:{ tb.color }; top:{ tb.startPx }px; height:{ tb.heightPx }px;'>
+				<div 
+					class='time-block' 
+					style='background-color:{ tb.color }; top:{ tb.startPx }px; height:{ tb.heightPx }px;'
+				>
 				</div>
 			{/if}
 		{/each}
 
-		<div class='time-cursor' style='top: { timeCursorPos }px'></div>
+		<div class='time-cursor' style='top: { timeToPx(todayMs) }px'></div>
 	</div>
 </main>
 
@@ -59,6 +60,7 @@
 	:global(body) {
 		margin: 0;
 		padding: 0;
+		background-color: black;
 	}
 
 	main {
@@ -77,11 +79,11 @@
 		overflow-y: hidden;
 		width: 100%;
 		height: 3px;
-		background-color: black;
+		background-color: lawngreen;
 	}
 
 	.time-block-container {
-		background-color: #f6fafd;
+		background-color: #222;
 		width: 100%;
 		height: 100%;
 	}
