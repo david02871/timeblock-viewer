@@ -1,36 +1,40 @@
 <script>
 	import { getTimeBlocks } from './clockify.js';
-
-	// TODO
-	// Poll for updates
-	// Show current time on hover at cursor
-	// scroll through time
-	// in progress tasks
-	// red cursor when not tracking
-	// stop button on cursor
+	import { onDestroy } from 'svelte';
 
 	let timeBlocks = [];
 	let timeEntries = [];
 	let gapBlocks = [];
+
 	let today = new Date();
 	let todayMs = today.getTime();
-	let timeFromMs = today.setHours(9, 0, 0, 0); // 9:00am
-	let timeToMs = today.setHours(18, 0, 0, 0); // 6:00pm
+	let startTimeMs = today.setHours(9, 0, 0, 0); // 9:00am
+	let endTimeMs = today.setHours(18, 0, 0, 0); // 6:00pm
 
-	function timeToPx(timeMs) {
+	let fetchPollSeconds = 60000; // fetch new timeblocks every minute
+	let timePollSeconds = 10000; // update cursor time every 10 seconds
+
+	const updateCursor = () => {
+		today = new Date();
+		todayMs = today.getTime();
+	}
+
+	const timeToPx = (timeMs) => {
 		const windowHeight = window.innerHeight;
-		const px = ((timeMs - timeFromMs) / (timeToMs - timeFromMs)) * windowHeight;
+		const px = ((timeMs - startTimeMs) / (endTimeMs - startTimeMs)) * windowHeight;
 
 		return Math.min(px, windowHeight);
 	}
 
-	function updateTimeBlocks() {
+	const updateTimeBlocks = () => {
 		timeBlocks = timeEntries.map(entry => ({
 			startPx: timeToPx(entry.start),
 			heightPx: Math.max(timeToPx(entry.end) - timeToPx(entry.start), 2),
 			...entry
 		}));
+	}
 
+	const updateGapBlocks = () => {
 		let newBlocks = [];
 		timeBlocks.forEach((item, index) => {
 			// off screen
@@ -56,13 +60,23 @@
 		gapBlocks = newBlocks;
 	}
 
-	async function init() {
+	const getBlocks = async () => {
 		timeEntries = await getTimeBlocks()
 			.catch(error => console.error(error));
+
 		updateTimeBlocks();
+		updateGapBlocks();
 	}
 
-	init();
+	getBlocks();
+
+	const fetchPollInterval = setInterval(getBlocks, fetchPollSeconds);
+	const timePollInterval = setInterval(updateCursor, timePollSeconds);
+
+	onDestroy(() => {
+		clearInterval(fetchPollInterval)
+		clearInterval(timePollInterval)
+	});
 </script>
 
 <svelte:window on:resize={updateTimeBlocks} />
@@ -116,8 +130,11 @@
 	.time-block {
 		position: absolute;
 		overflow-y: hidden;
+		border-bottom: 2px solid #222;
+		border-top: 2px solid #222;
 		left: 0px;
 		width: 100%;
+		cursor: pointer;
 	}
 
 	.time-cursor {
