@@ -1,10 +1,10 @@
 <script>
-	import { getTimeBlocks } from './clockify.js';
+	import { getTimeBlocks } from './helpers.js';
+	import TimeBlock from './TimeBlock.svelte';
 	import { onDestroy } from 'svelte';
 
-	let timeBlocks = [];
 	let timeEntries = [];
-	let gapBlocks = [];
+	let gaps = [];
 
 	let today = new Date();
 	let todayMs = today.getTime();
@@ -26,35 +26,25 @@
 		return Math.min(px, windowHeight);
 	}
 
-	const updateTimeBlocks = () => {
-		timeBlocks = timeEntries.map(entry => ({
-			startPx: timeToPx(entry.start),
-			heightPx: Math.max(timeToPx(entry.end) - timeToPx(entry.start), 2),
-			...entry
-		}));
-	}
-
-	const updateGapBlocks = () => {
-		let newBlocks = [];
-		timeBlocks.forEach((item, index) => {
+	const findGaps = () => {
+		let newGaps = [];
+		timeEntries.forEach((entry, index) => {
 			// off screen
-			if (index === 0 || item.startPx < 1) {
+			const isOffScreen = timeToPx(entry.start) < 0;
+			if (index === 0 || isOffScreen) {
 				return;
 			}
 
-			const previousItem = timeBlocks[index - 1];
-			const previousItemEndPx = previousItem.startPx + previousItem.heightPx;
-			const gapPx = item.startPx - previousItemEndPx;
+			const previousEntry = entry[index - 1];
+			const gap = entry.start - previousEntry.end;
 
-			// overlap
-			if (gapPx < 1) {
-				return;
+			// check for overlap
+			if (gap > 0) {
+				newGaps.push({
+					start: previousEntry.end,
+					end: entry.start
+				});
 			}
-
-			newBlocks.push({
-				startPx: previousItemEndPx,
-				heightPx: gapPx
-			});
 		});
 
 		gapBlocks = newBlocks;
@@ -64,8 +54,7 @@
 		timeEntries = await getTimeBlocks()
 			.catch(error => console.error(error));
 
-		updateTimeBlocks();
-		updateGapBlocks();
+		gaps = findGaps(timeEntries);
 	}
 
 	getBlocks();
@@ -79,31 +68,17 @@
 	});
 </script>
 
-<svelte:window on:resize={updateTimeBlocks} />
+<!-- <svelte:window on:resize={updateTimeBlocks} /> -->
 
 <main>
 	<div class='time-block-container'>
-		{#each timeBlocks as tb}
-			{#if tb.startPx > -1}
-				<div 
-					class='time-block' 
-					style='background-color:{ tb.color }; top:{ tb.startPx }px; height:{ tb.heightPx }px;'
-				>
-				</div>
-			{/if}
+		{#each timeEntries as t}
+			<TimeBlock start={t.start} end={t.end} color={t.color} timeToPx={timeToPx} />
 		{/each}
-
-		{#each gapBlocks as tb}
-			{#if tb.startPx > -1}
-				<div 
-					class='gap-block' 
-					style='top:{ tb.startPx }px; height:{ tb.heightPx }px;'
-				>
-				</div>
-			{/if}
+		{#each gaps as g}
+			<TimeBlock start={g.start} end={g.end} isGap={true} timeToPx={timeToPx} />
 		{/each}
-
-		<div class='time-cursor' style='top: { timeToPx(todayMs) }px'></div>
+		<div class='time-cursor' style='top: {timeToPx(todayMs)}px'></div>
 	</div>
 </main>
 

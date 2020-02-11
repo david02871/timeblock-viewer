@@ -1,6 +1,6 @@
 import { getCurrentlyLoggedInUser, get50MostRecentTimeEntries, findProjectsOnWorkspace } from './clockifyApi.js';
 
-export async function getTimeBlocks() {
+export const getTimeBlocks = async () => {
     const user = await getCurrentlyLoggedInUser();
     const projects = await findProjectsOnWorkspace(user.activeWorkspace);
     const { timeEntriesList } = await get50MostRecentTimeEntries(user.activeWorkspace, user.id);
