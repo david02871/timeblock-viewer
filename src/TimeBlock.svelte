@@ -3,6 +3,7 @@
 	export let color = '#222';
 	export let start = 0;
 	export let end = 0;
+	export let name = '';
 	export let timeToPx = () => {};
 
 	let startPos = timeToPx(start);
@@ -28,7 +29,12 @@
 		cursor: pointer;
 	}
 
-	div.gap-block {
-		background-color: #222;
+	div:hover {
+		opacity: 0.7;
+		transition: 0.3s;
+	}
+
+	.gap-block {
+		background-color: yellow;
 	}
 </style>
