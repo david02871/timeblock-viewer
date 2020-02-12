@@ -1,11 +1,10 @@
 <script>
 	import { getTimeBlocks } from './helpers.js';
 	import TimeBlock from './TimeBlock.svelte';
-	import { onDestroy } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 
 	let height = window.innerHeight;
 	let timeEntries = [];
-	let gaps = [];
 
 	let today = new Date();
 	$: todayMs = today.getTime();
@@ -24,17 +23,17 @@
 		return Math.min(px, height);
 	}
 
-	$: console.log(height);
-
 	const getBlocks = async () => {
 		timeEntries = await getTimeBlocks()
 			.catch(error => console.error(error));
 	}
 
-	getBlocks();
-
 	const fetchPollInterval = setInterval(getBlocks, fetchPollSeconds);
 	const timePollInterval = setInterval(() => today = new Date(), timePollSeconds);
+
+	onMount(() => {
+		getBlocks();
+	})
 
 	onDestroy(() => {
 		clearInterval(fetchPollInterval);
