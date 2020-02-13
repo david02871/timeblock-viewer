@@ -9,6 +9,7 @@
 	let timePollSeconds = 10000; // update cursor time every 10 seconds
 	let today = new Date();
 
+
 	$: todayMs = today.getTime();
 	$: startTimeMs = today.setHours(9, 0, 0, 0); // 9:00am
 	$: endTimeMs = today.setHours(18, 0, 0, 0); // 6:00pm
@@ -24,17 +25,17 @@
 			&& (e.end - e.start > 0) // no overlaps
 		);
 
+	const timeToPx = (timeMs) => {
+		const px = ((timeMs - startTimeMs) / (endTimeMs - startTimeMs)) * height;
+		return Math.min(px, height);
+	}
+
 	$: timeBlocks = [...timeEntries, ...gaps]
 		.map(t => ({
 			startPx: timeToPx(t.start),
 			height: Math.max(timeToPx(t.end) - timeToPx(t.start), 2),
 			...t
 		}));
-
-	const timeToPx = (timeMs) => {
-		const px = ((timeMs - startTimeMs) / (endTimeMs - startTimeMs)) * height;
-		return Math.min(px, height);
-	}
 
 	const getBlocks = async () => {
 		timeEntries = await getTimeBlocks()
@@ -54,7 +55,7 @@
 	});
 </script>
 
-<svelte:window bind:innerHeight={height} />
+<svelte:window bind:innerHeight={height} on:resize={() => timeEntries=timeEntries} />
 
 <main>
 	<div class='time-block-container'>
