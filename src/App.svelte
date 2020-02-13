@@ -5,18 +5,31 @@
 
 	let height = window.innerHeight;
 	let timeEntries = [];
-
+	let fetchPollSeconds = 60000; // fetch new timeblocks every minute
+	let timePollSeconds = 10000; // update cursor time every 10 seconds
 	let today = new Date();
+
 	$: todayMs = today.getTime();
 	$: startTimeMs = today.setHours(9, 0, 0, 0); // 9:00am
 	$: endTimeMs = today.setHours(18, 0, 0, 0); // 6:00pm
 
-	let fetchPollSeconds = 60000; // fetch new timeblocks every minute
-	let timePollSeconds = 10000; // update cursor time every 10 seconds
-
 	$: gaps = timeEntries
-		.map((e, i) => ({ start: i && timeEntries[i - 1].end, end: e.start })) // gaps between entries
-		.filter(e => (e.end > startTimeMs) && (e.end - e.start > 0)); // on screen only, no overlaps
+		.map((e, i) => ({
+			start: i && timeEntries[i - 1].end, 
+			end: e.start, 
+			isGap: true
+		}))
+		.filter(e =>
+			(e.end > startTimeMs) // on screen only
+			&& (e.end - e.start > 0) // no overlaps
+		);
+
+	$: timeBlocks = [...timeEntries, ...gaps]
+		.map(t => ({
+			startPx: timeToPx(t.start),
+			height: Math.max(timeToPx(t.end) - timeToPx(t.start), 2),
+			...t
+		}));
 
 	const timeToPx = (timeMs) => {
 		const px = ((timeMs - startTimeMs) / (endTimeMs - startTimeMs)) * height;
@@ -45,11 +58,8 @@
 
 <main>
 	<div class='time-block-container'>
-		{#each timeEntries as t}
-			<TimeBlock timeToPx={timeToPx} {...t} />
-		{/each}
-		{#each gaps as g}
-			<TimeBlock isGap={true} timeToPx={timeToPx} {...g} />
+		{#each timeBlocks as t}
+			<TimeBlock {...t} />
 		{/each}
 		<div class='time-cursor' style='top: {timeToPx(todayMs)}px'></div>
 	</div>

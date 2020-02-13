@@ -3,18 +3,16 @@
 	export let color = '#222';
 	export let start = 0;
 	export let end = 0;
+	export let startPx = 0;
+	export let height = 0;
 	export let name = '';
-	export let timeToPx = () => {};
-
-	let startPos = timeToPx(start);
-	let height = Math.max(timeToPx(end) - timeToPx(start), 2);
 </script>
 
-{#if startPos > -1}
+{#if startPx > -1}
 	{#if !isGap}
-		<div style='background-color:{color}; top:{startPos}px; height:{height}px;'></div>
+		<div style='background-color:{color}; top:{startPx}px; height:{height}px;'></div>
 	{:else}
-		<div class='gap-block' style='top:{startPos}px; height:{height}px;'></div>
+		<div class='gap-block' style='top:{startPx}px; height:{height}px;'></div>
 	{/if}
 {/if}
 
