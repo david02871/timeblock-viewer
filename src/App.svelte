@@ -1,6 +1,7 @@
 <script>
 	import { getTimeBlocks } from './helpers.js';
 	import TimeBlock from './TimeBlock.svelte';
+	import Cursor from './Cursor.svelte';
 	import { onMount, onDestroy } from 'svelte';
 
 	let height = window.innerHeight;
@@ -8,7 +9,7 @@
 	let fetchPollSeconds = 60000; // fetch new timeblocks every minute
 	let timePollSeconds = 10000; // update cursor time every 10 seconds
 	let today = new Date();
-
+	let isTracking = false;
 
 	$: todayMs = today.getTime();
 	$: startTimeMs = today.setHours(9, 0, 0, 0); // 9:00am
@@ -38,7 +39,7 @@
 		}));
 
 	const getBlocks = async () => {
-		timeEntries = await getTimeBlocks()
+		[ timeEntries, isTracking ] = await getTimeBlocks()
 			.catch(error => console.error(error));
 	}
 
@@ -55,14 +56,21 @@
 	});
 </script>
 
-<svelte:window bind:innerHeight={height} on:resize={() => timeEntries=timeEntries} />
+<svelte:window 
+	bind:innerHeight={height} 
+	on:resize={() => timeEntries=timeEntries}
+/>
 
 <main>
 	<div class='time-block-container'>
 		{#each timeBlocks as t}
 			<TimeBlock {...t} />
 		{/each}
-		<div class='time-cursor' style='top: {timeToPx(todayMs)}px'></div>
+
+		<Cursor 
+			isTracking={isTracking} 
+			position={timeToPx(todayMs)}
+		/>
 	</div>
 </main>
 
@@ -75,14 +83,6 @@
 
 	main {
 		height: 100vh;
-	}
-
-	.time-cursor {
-		position: absolute;
-		overflow-y: hidden;
-		width: 100%;
-		height: 3px;
-		background-color: lawngreen;
 	}
 
 	.time-block-container {
