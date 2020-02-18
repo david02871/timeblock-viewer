@@ -6,11 +6,23 @@
 	export let startPx = 0;
 	export let height = 0;
 	export let name = '';
+
+	let windowActive = false;
 </script>
+
+<svelte:body 
+	on:mouseenter={() => windowActive = true}
+	on:mouseleave={() => windowActive = false}
+/>
 
 {#if startPx > -1}
 	{#if !isGap}
-		<div style='background-color:{color}; top:{startPx}px; height:{height}px;'></div>
+		<div 
+			class='time-block' 
+			style='background-color:{color}; top:{startPx}px; height:{height}px;'
+		>
+			<span class='{!windowActive && 'hidden'}'>{name}</span>
+		</div>
 	{:else}
 		<div class='gap-block' style='top:{startPx}px; height:{height}px;'></div>
 	{/if}
@@ -25,6 +37,16 @@
 		border-bottom: 2px solid #222;
 		border-top: 2px solid #222;
 		cursor: pointer;
+	}
+
+	.time-block span {
+		font-size: 13px;
+		font-family: monospace;
+		padding: 3px; 
+	}
+
+	.hidden {
+		display: none;
 	}
 
 	div:hover {
