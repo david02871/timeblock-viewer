@@ -17,9 +17,10 @@
 	$: endTimeMs = today.setHours(18, 0, 0, 0) + (scrollY * 60000); // 6:00pm
 
 	const handleWheel = (e) => {
-			scrollY = Math.min(0, scrollY + e.deltaY);
-			timeEntries=timeEntries;
-		};
+		scrollY = Math.min(0, scrollY + e.deltaY);
+		timeEntries=timeEntries;
+		today = new Date();
+	};
 
 	$: gaps = timeEntries
 		.map((e, i) => ({
