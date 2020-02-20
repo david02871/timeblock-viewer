@@ -10,10 +10,16 @@
 	let timePollSeconds = 10000; // update cursor time every 10 seconds
 	let today = new Date();
 	let isTracking = false;
+	let scrollY = 0;
 
 	$: todayMs = today.getTime();
-	$: startTimeMs = today.setHours(9, 0, 0, 0); // 9:00am
-	$: endTimeMs = today.setHours(18, 0, 0, 0); // 6:00pm
+	$: startTimeMs = today.setHours(9, 0, 0, 0) + (scrollY * 60000); // 9:00am
+	$: endTimeMs = today.setHours(18, 0, 0, 0) + (scrollY * 60000); // 6:00pm
+
+	const handleWheel = (e) => {
+			scrollY = Math.min(0, scrollY + e.deltaY);
+			timeEntries=timeEntries;
+		};
 
 	$: gaps = timeEntries
 		.map((e, i) => ({
@@ -57,8 +63,12 @@
 </script>
 
 <svelte:window 
+	on:wheel|passive={handleWheel}
 	bind:innerHeight={height} 
-	on:resize={() => timeEntries=timeEntries}
+	on:resize={() => {
+		timeEntries=timeEntries;
+		today = new Date();
+	}}
 />
 
 <main>

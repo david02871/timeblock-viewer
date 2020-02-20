@@ -3,8 +3,8 @@
 	export let position = 0;
 
 	let windowActive = false;
-	let d = new Date();
 
+	let d = new Date();
 	let timeStr = d.toLocaleTimeString([], { // time string without seconds
 		hour: '2-digit', 
 		minute:'2-digit'
